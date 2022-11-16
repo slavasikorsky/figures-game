@@ -9,8 +9,9 @@ addEventListener('load', () => {
     const ctx = canvas.getContext('2d');
     let currentCount = 0;
     //array of figures
-    figures = [
+    const figures = [
         {
+            id: 0,
             name: 'rectangle',
             colour: '#05EFFF',
             width: 50,
@@ -19,6 +20,7 @@ addEventListener('load', () => {
             left: 15
         },
         {
+            id: 1,
             name: 'arc',
             colour: '#d45',
             width: 50,
@@ -27,6 +29,31 @@ addEventListener('load', () => {
             left: 250
         },
         {
+            id: 2,
+            name: 'arc',
+            colour: '#d40',
+            radius: 20,
+            top: 10,
+            left: 110
+        },
+        {
+            id: 3,
+            name: 'arc',
+            colour: '#d44',
+            radius: 12,
+            top: 60,
+            left: 100
+        },
+        {
+            id: 4,
+            name: 'arc',
+            colour: '#d56',
+            radius: 16,
+            top: 30,
+            left: 110
+        },
+        {
+            id: 5,
             name: 'triangle',
             colour: '#d31',
             width: 20,
@@ -34,6 +61,7 @@ addEventListener('load', () => {
             left: 100
         },
         {
+            id: 6,
             name: 'rectangle',
             colour: '#c2c3c4',
             width: 70,
@@ -42,6 +70,7 @@ addEventListener('load', () => {
             left: 150
         },
         {
+            id: 7,
             name: 'triangle',
             colour: '#fd3',
             width: 25,
@@ -49,6 +78,7 @@ addEventListener('load', () => {
             left: 20
         },
         {
+            id: 8,
             name: 'rectangle',
             colour: '#f04',
             width: 25,
@@ -57,6 +87,7 @@ addEventListener('load', () => {
             left: 120
         },
         {
+            id: 9,
             name: 'rectangle',
             colour: '#fd2',
             width: 30,
@@ -65,8 +96,15 @@ addEventListener('load', () => {
             left: 220
         }
     ];
+    //result array
+    let renderArray = [];
 
-    const clean = (canvas) => {
+    const changeCount = (num, count) => {
+        currentCount = num;
+        count.innerHTML = currentCount;
+    }
+
+    const clean = (canvas, ctx) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -93,7 +131,7 @@ addEventListener('load', () => {
     }
 
     const render = (number, array, canvas) => {
-        clean(canvas);
+        clean(canvas, ctx);
         array.slice(0, number).forEach(element => {
             switch (element.name) {
                 case 'arc': {
@@ -116,6 +154,10 @@ addEventListener('load', () => {
         buttons.forEach(e => e.disabled = status)
     }
 
+    const random = (max) => {
+        return Math.floor(Math.random() * max);
+    }
+
     //load
     disableButtons(true, buttonPlus, buttonMinus);
 
@@ -129,24 +171,30 @@ addEventListener('load', () => {
         e.preventDefault;
         //disabled +-buttons
         disableButtons(true, buttonPlus, buttonMinus);
+        clean(canvas, ctx);
+        changeCount(0, count);
+        renderArray = [];
     })
 
     buttonPlus.addEventListener('click', (e) => {
         e.preventDefault();
-        currentCount += 1
-        count.innerHTML = currentCount;
-        render(currentCount, figures, canvas);
+        changeCount(currentCount+1, count);
+        //push random figute into the renderArray
+        renderArray.push(figures[random(figures.length)]);
+        render(currentCount, renderArray, canvas);
     });
 
     buttonMinus.addEventListener('click', (e) => {
         e.preventDefault();
         if (currentCount > 0) {
-            currentCount -= 1;
-            count.innerHTML = currentCount;
-            render(currentCount, figures, canvas);
+            changeCount(currentCount-1, count);
+            //remove las element of new array
+            renderArray.pop();
+            render(currentCount, renderArray, canvas);
         } else {
-            count.innerHTML = 0;
-            clean(canvas);
+            changeCount(0, count);
+            clean(canvas, ctx);
+            renderArray = [];
         }
     });
 });
