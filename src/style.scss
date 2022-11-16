@@ -23,7 +23,12 @@ button {
   border-radius: 8px;
   color: $white;
   cursor: pointer;
-  transition: all 0.3s linear;
+  transition: background-color 0.3s linear;
+  &:disabled {
+    cursor: default;
+    opacity: .4;
+    background-color:$gray!important;
+  }
 }
 
 .container {
@@ -32,31 +37,11 @@ button {
   background-color: $bg;
   border-radius: 8px;
   .game-content {
-    width: 459px;
-    height: 211px;
+    width: 700px;
+    height: 350px;
     background: $white;
     border-radius: 8px;
     position: relative;
-
-    .static {
-      position: absolute;
-      display: none;
-      &.active {
-        display: block;
-      }
-      &.ellipse {
-        top: 50px;
-        left: 100px;
-      }
-      &.rectangle {
-        top: 120px;
-        left: 70px;
-      }
-      &.star {
-        top: 100px;
-        left: 300px; 
-      }
-    }
   }
 
   .bottom {
