@@ -5,160 +5,244 @@ addEventListener('load', () => {
     const buttonPlus = container.querySelector('.btn-plus');
     const buttonMinus = container.querySelector('.btn-minus');
     const count = container.querySelector('.count');
-    const canvas = container.querySelector('canvas');
-    const ctx = canvas.getContext('2d');
+    const gameContent = container.querySelector('.game-content');
+
+    //currentCount = current images count
+    //imageCount = number of add/remove image
     let currentCount = 0;
-    //array of figures
-    const figures = [
+    let imageCount = 0;
+
+    const data = {
+        colors: [
+            'Red',
+            'Blue',
+            'Green',
+            'Cyan',
+            'Orange',
+            'DarkRed',
+            'DarkSlateGray',
+            'BurlyWood',
+            'Lavender',
+            'LightGray',
+            'PaleGreen',
+            'SeaGreen',
+            'Purple',
+            'Sienna',
+            'RoyalBlue',
+            'SlateGrey',
+            'Teal',
+            'Yellow'
+        ],
+        size: [
+            0.5,
+            1,
+            2
+        ]
+    };
+
+    const images = [
         {
             id: 0,
-            name: 'rectangle',
-            colour: '#05EFFF',
-            width: 50,
-            height: 30,
-            top: 20,
-            left: 15
+            type: 'rectangle',
+            width: 100,
         },
         {
             id: 1,
-            name: 'arc',
-            colour: '#d45',
+            type: 'rectangle',
             width: 50,
-            radius: 20,
-            top: 120,
-            left: 250
-        },
-        {
-            id: 2,
-            name: 'arc',
-            colour: '#d40',
-            radius: 20,
-            top: 10,
-            left: 110
         },
         {
             id: 3,
-            name: 'arc',
-            colour: '#d44',
-            radius: 12,
-            top: 60,
-            left: 100
+            type: 'rectangle',
+            width: 25,
         },
         {
             id: 4,
-            name: 'arc',
-            colour: '#d56',
-            radius: 16,
-            top: 30,
-            left: 110
+            type: 'star',
+            width: 25,
         },
         {
             id: 5,
-            name: 'triangle',
-            colour: '#d31',
-            width: 20,
-            top: 60,
-            left: 100
+            type: 'star',
+            width: 35,
         },
         {
             id: 6,
-            name: 'rectangle',
-            colour: '#c2c3c4',
-            width: 70,
-            height: 20,
-            top: 100,
-            left: 150
+            type: 'star',
+            width: 40,
         },
         {
             id: 7,
-            name: 'triangle',
-            colour: '#fd3',
-            width: 25,
-            top: 80,
-            left: 20
+            type: 'circle',
+            width: 15,
         },
         {
             id: 8,
-            name: 'rectangle',
-            colour: '#f04',
-            width: 25,
-            height: 20,
-            top: 40,
-            left: 120
+            type: 'circle',
+            width: 30,
         },
         {
             id: 9,
-            name: 'rectangle',
-            colour: '#fd2',
+            type: 'triangle',
             width: 30,
-            height: 40,
-            top: 10,
-            left: 220
-        }
+        },
+        {
+            id: 10,
+            type: 'triangle',
+            width: 20,
+        },
     ];
-    //result array
-    let renderArray = [];
+
+    const random = (max) => {
+        return Math.floor(Math.random() * max);
+    }
+
+
+    const setPosition = (elementWidth, coordinate, container) => {
+        const parentRect = container.getBoundingClientRect();
+        let maxCoord;
+        coordinate == 'left'
+            ? maxCoord = parentRect.width
+            : coordinate == 'top'
+                ? maxCoord = parentRect.height
+                : null
+        const max = maxCoord - elementWidth
+        return random(max);
+    }
+
+    const renderCircle = (data, container) => {
+        container.innerHTML += `<svg class="image" data-count="${imageCount}" xmlns="http://www.w3.org/2000/svg" width="${data.width}" height="${data.width}" viewBox="0 0 46 46" ${data.style}'>
+        <circle cx="23" cy="23" r="23" fill="${data.color}"/>
+        </svg>`;
+    }
+
+    const renderStar = (data, container) => {
+        container.innerHTML += `\n
+            <svg xmlns='http://www.w3.org/2000/svg' data-count="${imageCount}" width='${data.width}' height='${data.width}'\n
+            class='image' viewBox='0 0 69 57' ${data.style}>\n
+            <path d='M34.5 0L42.4702 21.766H68.2625L47.3961 35.2181L55.3664 56.984L34.5 43.5319L13.6336 56.984L21.6039 35.2181L0.737495 21.766H26.5298L34.5 0Z'\n
+            fill='${data.color}'/></svg>`
+            ;
+    }
+
+    const renderRectangle = (data, container) => {
+        container.innerHTML += `<svg class="image" data-count="${imageCount}" xmlns="http://www.w3.org/2000/svg" width="${data.width}" height="${data.width}" viewBox="0 0 50 45" ${data.style}'>
+        <rect width="50" height="45" fill="${data.color}"/>
+        </svg>`;
+    }
+
+    const renderTriangle = (data, container) => {
+        container.innerHTML += `<svg class="image" data-count="${imageCount}" xmlns="http://www.w3.org/2000/svg" width="${data.width}" height="${data.width}" viewBox="0 0 33 28" fill="none" ${data.style}'>
+        <path d="M16.5 0L32.5215 27.75H0.478531L16.5 0Z" fill="${data.color}"/>
+        </svg>`
+    }
 
     const changeCount = (num, count) => {
         currentCount = num;
         count.innerHTML = currentCount;
     }
 
-    const clean = (canvas, ctx) => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const clean = (container) => {
+        container.querySelectorAll('.image').forEach(e => e.remove());
     }
 
-    const drawRectangle = (element, ctx) => {
-        ctx.fillStyle = element.colour;
-        ctx.fillRect(element.left, element.top, element.width, element.height);
+    const removeImage = (container, number) => {
+        imageCount--;
+        console.log(number);
+        const image = container.querySelector(`[data-count="${number}"]`);
+        image.remove();
     }
 
-    const drawTriangle = (element, ctx) => {
-        ctx.fillStyle = element.colour;
-        ctx.beginPath();
-        ctx.moveTo(element.left, element.top);
-        ctx.lineTo(element.left + element.width, element.top);
-        ctx.lineTo(element.left, element.top + element.width);
-        ctx.closePath();
-        ctx.fill();
-    }
+    const getCoords = (container, width) => {
+        let elementTop, elementLeft, test, i = 0;
+        //get all images
+        const allImages = container?.querySelectorAll('.image');
 
-    const drawArc = (element, ctx) => {
-        ctx.fillStyle = element.colour;
-        ctx.beginPath();
-        ctx.arc(element.left, element.top, element.radius, 0, 2 * Math.PI);
-        ctx.fill();
-    }
-
-    const render = (number, array, canvas) => {
-        clean(canvas, ctx);
-        array.slice(0, number).forEach(element => {
-            switch (element.name) {
-                case 'arc': {
-                    drawArc(element, ctx);
-                    break;
-                }
-                case 'rectangle': {
-                    drawRectangle(element, ctx);
-                    break;
-                }
-                case 'triangle': {
-                    drawTriangle(element, ctx);
-                    break;
-                }
+        //100 times check if random position doesn't overlap other figures
+        for (i = 0; i<=100; i++) {
+            test = false
+            elementTop = setPosition(width, 'top', container);
+            elementLeft = setPosition(width, 'left', container);
+            test = [...allImages].every(image => checkOverlap(image, elementTop, elementLeft, width) == true);
+            console.log(test);
+            if(test == true && i <= 100) {
+                return {elementTop, elementLeft}
             }
-        });
+        }
+        if (!test) {
+            console.error('game stop');
+            disableButtons(true, buttonPlus, buttonMinus);
+            return {elementTop, elementLeft}
+        }
+
+    };
+
+    const render = async (element, container) => {
+        const elementSize = data.size[random(data.size.length)];
+        const elementWidth = elementSize * element.width;
+        const color = data.colors[random(data.colors.length)];
+        const {elementTop, elementLeft} = await getCoords(container, elementWidth);
+        let style = `style="top: ${elementTop}px; left: ${elementLeft}px"`;
+
+        const elementData = {
+            width: elementWidth,
+            color: color,
+            style: style,
+        }
+
+        switch (element.type) {
+            case 'triangle': {
+                renderTriangle(elementData, container);
+                break;
+            }
+            case 'rectangle': {
+                renderRectangle(elementData, container);
+                break;
+            }
+            case 'circle': {
+                renderCircle(elementData, container);
+                break;
+            }
+            case 'star': {
+                renderStar(elementData, container);
+                break;
+            }
+        }
     }
 
     const disableButtons = (status, ...buttons) => {
         buttons.forEach(e => e.disabled = status)
     }
 
-    const random = (max) => {
-        return Math.floor(Math.random() * max);
+    const getLastImage = (container) => {
+        const images = container.querySelectorAll('[data-count]');
+        const imagesArray = [];
+        images.forEach(image => {
+            imagesArray.push(image.dataset.count);
+        });
+        return Math.max(...imagesArray);
+    }
+
+    const checkOverlap = (el1, elTop, elLeft, elWidth) => {
+        const figure1 = el1.getBoundingClientRect();
+
+        return (
+            figure1.top > (elTop + elWidth) ||
+            figure1.right < elLeft ||
+            figure1.bottom < elTop ||
+            figure1.left > (elLeft + elWidth)
+        );
     }
 
     //load
+    container.addEventListener('click', (e) => {
+        if (e.target.parentNode.classList.contains('image')) {
+            //e.target.parentNode.classList.add('hide');
+            e.target.parentNode.remove();
+            changeCount(currentCount - 1, count);
+        }
+    });
+
     disableButtons(true, buttonPlus, buttonMinus);
 
     buttonStart.addEventListener('click', (e) => {
@@ -171,30 +255,24 @@ addEventListener('load', () => {
         e.preventDefault;
         //disabled +-buttons
         disableButtons(true, buttonPlus, buttonMinus);
-        clean(canvas, ctx);
+        clean(gameContent);
         changeCount(0, count);
-        renderArray = [];
     })
 
     buttonPlus.addEventListener('click', (e) => {
         e.preventDefault();
-        changeCount(currentCount+1, count);
-        //push random figute into the renderArray
-        renderArray.push(figures[random(figures.length)]);
-        render(currentCount, renderArray, canvas);
+        changeCount(currentCount + 1, count);
+        imageCount++;
+        render(images[random(images.length)], gameContent);
     });
 
     buttonMinus.addEventListener('click', (e) => {
         e.preventDefault();
         if (currentCount > 0) {
-            changeCount(currentCount-1, count);
-            //remove las element of new array
-            renderArray.pop();
-            render(currentCount, renderArray, canvas);
+            changeCount(currentCount - 1, count);
+            removeImage(gameContent, getLastImage(gameContent));
         } else {
             changeCount(0, count);
-            clean(canvas, ctx);
-            renderArray = [];
         }
     });
 });
