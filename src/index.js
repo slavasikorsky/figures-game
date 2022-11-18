@@ -148,7 +148,6 @@ addEventListener('load', () => {
 
     const removeImage = (container, number) => {
         imageCount--;
-        console.log(number);
         const image = container.querySelector(`[data-count="${number}"]`);
         image.remove();
     }
@@ -164,7 +163,7 @@ addEventListener('load', () => {
             elementTop = setPosition(width, 'top', container);
             elementLeft = setPosition(width, 'left', container);
             test = [...allImages].every(image => checkOverlap(image, elementTop, elementLeft, width) == true);
-            console.log(test);
+  
             if(test == true && i <= 100) {
                 return {elementTop, elementLeft}
             }
@@ -177,11 +176,11 @@ addEventListener('load', () => {
 
     };
 
-    const render = async (element, container) => {
+    const render = (element, container) => {
         const elementSize = data.size[random(data.size.length)];
         const elementWidth = elementSize * element.width;
         const color = data.colors[random(data.colors.length)];
-        const {elementTop, elementLeft} = await getCoords(container, elementWidth);
+        const {elementTop, elementLeft} = getCoords(container, elementWidth);
         let style = `style="top: ${elementTop}px; left: ${elementLeft}px"`;
 
         const elementData = {
@@ -223,6 +222,7 @@ addEventListener('load', () => {
         return Math.max(...imagesArray);
     }
 
+    //check if overlapping new figure and other oldest figures
     const checkOverlap = (el1, elTop, elLeft, elWidth) => {
         const figure1 = el1.getBoundingClientRect();
 
@@ -233,13 +233,20 @@ addEventListener('load', () => {
             figure1.left > (elLeft + elWidth)
         );
     }
-
     //load
     container.addEventListener('click', (e) => {
-        if (e.target.parentNode.classList.contains('image')) {
-            //e.target.parentNode.classList.add('hide');
-            e.target.parentNode.remove();
-            changeCount(currentCount - 1, count);
+        const element = e.target.parentNode;
+        const bound = element.getBoundingClientRect();
+        if (element.classList.contains('image')) {
+            //go to 0-height
+            element.style.top = `-${bound.height}`;
+            //remove element and decrement count after 2s animation is done
+            //it's not a better way, 
+            //maybe a solution with mutationobserver and checks when top position=0-element.height it's a really cool way, but I don't have a lot of time((
+            setTimeout(function() {
+                changeCount(currentCount - 1, count);
+                element.remove()
+              }, 2000);
         }
     });
 
